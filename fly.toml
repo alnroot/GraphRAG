@@ -1,0 +1,17 @@
+app = "GraphRAG"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+[env]
+  ENVIRONMENT = "production"
+  NEO4J_URI = "neo4j+s://33e44caf.databases.neo4j.io"
+  NEO4J_USER = "neo4j"
+  PORT = "8080"
