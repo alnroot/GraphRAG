@@ -16,7 +16,7 @@ primary_region = 'eze'
   memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
-  memory_mb = 1024
+  memory_mb = 2048
 
   
 [env]
