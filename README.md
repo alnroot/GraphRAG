@@ -24,6 +24,10 @@ Memory multi-turno: Hacer que recuerde preguntas anteriores para poder tener una
 Una interfaz que no parezca de los 90s: Una UI donde puedas ver el grafo, las conexiones, y cómo llegó a la respuesta. Sería como CSI pero para información.
 Función "explícame como si tuviera 5 años": Botón para simplificar respuestas complejas y otro para profundizar si te interesa el tema.
 
+PDF:
+tesis_n6208_Klappenbach
+Inteligencia_Lavandera_LeccMag_USPCEU_2024
+
 Cómo ponerlo a funcionar en tu máquina
 Lo que necesitas
 
