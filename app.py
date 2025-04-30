@@ -5,20 +5,16 @@ from simple_graph_rag import GraphRAGChatbot
 
 # Load environment variables
 load_dotenv()
-import debugpy
-# Allow other computers to attach to debugpy at this IP address and port
-debugpy.listen(("0.0.0.0", 5678))
-# Uncomment this if you want the application to wait for the debugger to attach
-# debugpy.wait_for_client()
+# import debugpy
+# debugpy.listen(("0.0.0.0", 5678))
+# # debugpy.wait_for_client()
 print("⏳ Debugger is ready to attach")
 app = Flask(__name__)
 
-# Initialize GraphRAG chatbot
 chatbot = GraphRAGChatbot()
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    """Endpoint to check if the service is running."""
     return jsonify({"status": "ok"})
 
 @app.route('/graph/info', methods=['GET'])

@@ -77,15 +77,14 @@ class GraphRAGChatbot:
 
     def ask(self, question):
         print(f"\nPregunta: {question}")
-        nodes = self.find_relevant_nodes(question)
+        nodes = self._find_relevant_nodes(question)
         if not nodes:
             return {"answer": "No encontré información relevante.", "context": None, "sources": []}
-        # docs = self._get_related_documents(nodes)
         expanded = self._expand_context(nodes)
         return self._generate_response(question, nodes, expanded)
     
     
-    def find_relevant_nodes(self, query):
+    def _find_relevant_nodes(self, query):
         # client = OpenAI(api_key=OPENAI_API_KEY)
         # response = client.embeddings.create(
         #     input=query,
@@ -128,103 +127,89 @@ class GraphRAGChatbot:
         if not nodes:
             return []
 
+        # 1) IDs de los chunks iniciales
         node_ids = [n["id"] for n in nodes if "id" in n]
         if not node_ids:
             return []
 
+        # 2) Consulta que devuelve nodos + relación al origen
         query = """
-            MATCH (n)-[r:HAS_ENTITY]->(e)
-            WHERE elementId(n) IN $node_ids
-            RETURN
-            elementId(e)     AS id,
-            COALESCE(e.text,
-                    e.name,
-                    e.id)       AS content,
-            labels(e)         AS entity_labels,
-            type(r)           AS relationship_type
-            LIMIT $limit;
+        UNWIND $node_ids AS nid
+        MATCH (c)-[r:PART_OF|NEXT_CHUNK|HAS_ENTITY|SIMILAR]->(m)
+        WHERE elementId(c)=nid
+        RETURN DISTINCT
+        elementId(m)             AS id,
+        coalesce(m.text, m.name) AS content,
+        type(r)                  AS relationship
+        LIMIT $limit
         """
 
+        # 3) Ejecutar y formatear resultado
         with self.driver.session() as session:
             result = session.run(query, node_ids=node_ids, limit=limit)
+            expanded = [
+                {"id": r["id"], "content": r["content"], "relationship": r["relationship"]}
+                for r in result
+            ]
 
-            expanded = []
-            for record in result:
-                expanded.append({
-                    "id":                record["id"],
-                    "content":           record["content"],
-                    "labels":            record["entity_labels"],
-                    "relationship_type": record["relationship_type"]
-                })
+        # 4) Fallback a los chunks si no hay vecinos
+        if not expanded:
+            expanded = [{"id": n["id"], "content": n["text"], "relationship": None}
+                        for n in nodes[:limit]]
 
-            # Si no hay entidades, puedes devolver el texto original de los chunks
-            if not expanded:
-                expanded = [
-                    {"id": n["id"], "content": n["text"], "labels": n.get("labels", []), "relationship_type": None}
-                    for n in nodes[:limit]
-                ]
-
-            return expanded
-
-
+        return expanded
 
     def _generate_response(self, question, nodes, expanded):
         """
-        Construye un prompt que incluye:
-        1. Los fragmentos de texto (chunks) más relevantes.
-        2. La lista de entidades extraídas con sus etiquetas y tipo de relación.
-        Y envía ese prompt al LLM para generar la respuesta.
+        Genera respuesta completa basada en nodos relevantes y sus conexiones en el grafo.
+        Preserva todos los nodos y limita los textos a 300 caracteres solo si son más extensos.
         """
-        # 1) Fragmentos relevantes
-        chunk_lines = ["Fragmentos relevantes:"]
-        for i, n in enumerate(nodes, start=1):
-            text = n["text"].strip().replace("\n", " ")
-            # recortamos a 200 caracteres para no saturar el prompt
-            snippet = text[:200] + ("…" if len(text) > 200 else "")
-            chunk_lines.append(f"{i}. {snippet}")
-
-        # 2) Entidades extraídas
-        entity_lines = ["Entidades extraídas:"]
+        # Fragmentos relevantes
+        fragments = ["# Fragmentos relevantes:"]
+        for i, node in enumerate(nodes, 1):
+            text = node.get("text", "").strip().replace("\n", " ")
+            # Solo truncar si es extremadamente largo
+            if len(text) > 300:
+                text = text[:300] + "..."
+            fragments.append(f"{i}. {text}")
+        
+        # Entidades y relaciones
+        entities = ["# Entidades detectadas:"]
+        relations = ["# Relaciones:"]
+        
         for e in expanded:
-            name = e["content"]
-            labs = ", ".join(e["labels"])
-            rel  = e["relationship_type"]
-            entity_lines.append(f"- “{name}” (etiquetas: {labs}, relación: {rel})")
-
-        top = expanded[:5]
-
-        # construyo las secciones
-        frag = ["Fragmentos relevantes:"]
-        for i,n in enumerate(nodes[:2],1):
-            frag.append(f"{i}. {n['text'][:100]}…")
-
-        ents = ["Entidades clave:"]
-        for e in top:
-            ents.append(f"- {e['content']} ({', '.join(e['labels'])}): {e.get('snippet','')}")
-
-        rels = ["Relaciones:"]
-        # aquí deberías recuperar los tipos y destinos reales
-        for e in top:
-            rels.append(f"• {e['content']} –{e['relationship_type']}→ …")
-
-        prompt = "\n".join(["Contexto enriquecido:", *frag, "", *ents, "", *rels, "", f"Pregunta: {question}"])
-
-        # 4) Llamada al LLM
+            content = e.get("content")
+            rel_type = e.get("relationship")            
+            if content:
+                if len(str(content)) > 300:
+                    content = str(content)[:300] + "..."
+                    
+                if rel_type == "HAS_ENTITY":
+                    entities.append(f"- {content}")
+                
+                relations.append(f"- {rel_type}: {content}")
+        
+        prompt_sections = [
+            "\n".join(fragments),
+            "\n".join(entities),
+            "\n".join(relations),
+            f"\n# Pregunta: {question}"
+        ]
+        
+        prompt = "\n\n".join(prompt_sections)
+        
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "Utiliza el contexto proporcionado para responder de forma precisa y cita las entidades extraídas."},
-                {"role": "user",   "content": prompt}
+                {"role": "system", "content": "Responde basándote solo en el contexto proporcionado del grafo de conocimiento. Cita la información relevante."},
+                {"role": "user", "content": prompt}
             ],
             temperature=0.2,
             max_tokens=500
         )
-
-        answer = response.choices[0].message.content
-
-        # 5) Devolver estructura final
+        
         return {
-            "answer":  answer,
-            "chunks":  nodes,
+            "answer": response.choices[0].message.content,
+            "chunks": nodes,
             "entities": expanded
         }
