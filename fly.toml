@@ -17,3 +17,11 @@ primary_region = 'eze'
   cpu_kind = 'shared'
   cpus = 1
   memory_mb = 1024
+
+  
+[env]
+  ENVIRONMENT = "production"
+  NEO4J_URI = "neo4j+s://33e44caf.databases.neo4j.io"
+  NEO4J_USER = "neo4j"
+  NEO4J_PASSWORD = xe5Y63flhQPBuBiwYebAis3FvrC_Tyt5peIZgy7DdGI  
+  PORT = "8080"
