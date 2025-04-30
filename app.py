@@ -1,15 +1,12 @@
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
-
+import os
 from simple_graph_rag import GraphRAGChatbot
 from flask_cors import CORS
 
-# Load environment variables
+# Load environment variables (for local development)
 load_dotenv()
-# import debugpy
-# debugpy.listen(("0.0.0.0", 5678))
-# # debugpy.wait_for_client()
-print("⏳ Debugger is ready to attach")
+
 app = Flask(__name__)
 CORS(app)
 chatbot = GraphRAGChatbot()
@@ -76,4 +73,11 @@ def close_db_connection(error):
     chatbot.close()
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Determine if running in production
+    is_production = os.environ.get('ENVIRONMENT', '').lower() == 'production'
+    
+    # Get port from environment or use default
+    port = int(os.environ.get('PORT', 5000))
+    
+    # Run the app
+    app.run(host='0.0.0.0', port=port, debug=not is_production)

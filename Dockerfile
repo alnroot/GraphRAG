@@ -19,5 +19,10 @@ COPY .env* .
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
+# Run the application dev
+# CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "app.py"]
+
+EXPOSE 5000
+
 # Run the application
-CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "app.py"]
+CMD ["python", "app.py"]
