@@ -9,3 +9,4 @@ OPENAI
 neo4j_graphrag
 # Requests for API calls
 requests
+flask_cors

@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
-import os
+
 from simple_graph_rag import GraphRAGChatbot
+from flask_cors import CORS
 
 # Load environment variables
 load_dotenv()
@@ -10,7 +11,7 @@ load_dotenv()
 # # debugpy.wait_for_client()
 print("⏳ Debugger is ready to attach")
 app = Flask(__name__)
-
+CORS(app)
 chatbot = GraphRAGChatbot()
 
 @app.route('/health', methods=['GET'])
