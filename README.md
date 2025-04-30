@@ -33,7 +33,7 @@ Crea un archivo .env con:
 
 NEO4J_URI=neo4j+s://tu-instancia.databases.neo4j.io
 NEO4J_USER=neo4j
-NEO4J_PASSWORD=tu-contraseña-que-siempre-olvidas
+NEO4J_PASSWORD=xe5Y63flhQPBuBiwYebAis3FvrC_Tyt5peIZgy7DdGI
 OPENAI_API_KEY=sk-tu-api-key-carísima
 VECTOR_INDEX_NAME=vector
 
