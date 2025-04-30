@@ -52,3 +52,7 @@ docker-compose up
 estará en http://localhost:5000
 
 por ultimo abrir el archivo index.html para visualizacion
+veras algo asi:
+![image](https://github.com/user-attachments/assets/bdeea60e-26d3-4fd9-b3b7-5c093c024c24)
+![image](https://github.com/user-attachments/assets/92a3fc52-1232-4c27-a279-d9ef6895e19a)
+
