@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphRAG Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .left-panel {
+            flex: 1;
+        }
+        .right-panel {
+            flex: 1;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .chat-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+        }
+        .user-message {
+            background-color: #DCF8C6;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            max-width: 70%;
+            margin-left: auto;
+        }
+        .bot-message {
+            background-color: #FFFFFF;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            max-width: 70%;
+            border-left: 4px solid #0084FF;
+        }
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+        input, button, textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        input, textarea {
+            flex: 1;
+        }
+        button {
+            background-color: #0084FF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0066CC;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0084FF;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .status {
+            font-size: 0.9em;
+            margin-top: 5px;
+            color: #666;
+        }
+        .chunk {
+            background-color: #f0f0f0;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border-left: 3px solid #0084FF;
+        }
+        .entity {
+            background-color: #e6f7ff;
+            padding: 5px;
+            margin: 3px;
+            border-radius: 3px;
+            display: inline-block;
+            font-size: 0.85em;
+            border: 1px solid #91d5ff;
+        }
+        .hidden {
+            display: none;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 15px;
+        }
+        .tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: white;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>GraphRAG Demo</h1>
+    <p>Interactúa con el grafo de conocimiento a través de consultas en lenguaje natural.</p>
+
+    <div class="container">
+        <div class="left-panel">
+            <div class="card">
+                <h2>Chat</h2>
+                <div id="chat-container" class="chat-container"></div>
+                <div class="input-container">
+                    <input type="text" id="question-input" placeholder="Escribe tu pregunta aquí...">
+                    <button id="send-button">Enviar</button>
+                </div>
+                <div id="status" class="status"></div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="card">
+                <h2>Información del Grafo</h2>
+                <div class="tabs">
+                    <div class="tab active" data-tab="graph-info">Resumen</div>
+                    <div class="tab" data-tab="last-query">Última Consulta</div>
+                </div>
+                
+                <div class="tab-content active" id="graph-info">
+                    <div id="graph-info-content">
+                        <p>Cargando información del grafo...</p>
+                    </div>
+                    <button id="refresh-info">Actualizar información</button>
+                </div>
+                
+                <div class="tab-content" id="last-query">
+                    <h3>Fragmentos Relevantes</h3>
+                    <div id="relevant-chunks"></div>
+                    
+                    <h3>Entidades Detectadas</h3>
+                    <div id="entities"></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Estado del Servidor</h2>
+                <div id="server-status">Verificando conexión...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración y variables globales
+        const API_BASE_URL = 'http://localhost:5000'; // Ajusta esto según tu configuración
+        const chatContainer = document.getElementById('chat-container');
+        const questionInput = document.getElementById('question-input');
+        const sendButton = document.getElementById('send-button');
+        const statusDiv = document.getElementById('status');
+        const serverStatusDiv = document.getElementById('server-status');
+        const graphInfoContent = document.getElementById('graph-info-content');
+        const refreshInfoButton = document.getElementById('refresh-info');
+        const relevantChunks = document.getElementById('relevant-chunks');
+        const entitiesDiv = document.getElementById('entities');
+        
+        let lastResponse = null;
+
+        // Inicializar la aplicación
+        window.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            checkServerStatus();
+            loadGraphInfo();
+        });
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Manejar envío de preguntas
+            sendButton.addEventListener('click', sendQuestion);
+            questionInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendQuestion();
+                }
+            });
+            
+            // Manejar actualización de información del grafo
+            refreshInfoButton.addEventListener('click', loadGraphInfo);
+            
+            // Manejar pestañas
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Activar pestaña seleccionada
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Mostrar contenido de la pestaña
+                    const tabId = tab.getAttribute('data-tab');
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        }
+
+        // Verificar el estado del servidor
+        async function checkServerStatus() {
+            try {
+                serverStatusDiv.innerHTML = 'Conectando al servidor...';
+                
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    serverStatusDiv.innerHTML = `<span style="color: green;">✓ Conectado</span> - ${data.message || 'Servidor operativo'}`;
+                } else {
+                    throw new Error(data.error || 'Error al verificar estado');
+                }
+            } catch (error) {
+                serverStatusDiv.innerHTML = `<span style="color: red;">✗ Error de conexión</span> - ${error.message}`;
+                console.error('Error al verificar estado del servidor:', error);
+            }
+        }
+
+        // Cargar información del grafo
+        async function loadGraphInfo() {
+            try {
+                graphInfoContent.innerHTML = '<p>Cargando información del grafo...</p>';
+                
+                const response = await fetch(`${API_BASE_URL}/graph/info`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    let html = `
+                        <p><strong>Nodos:</strong> ${data.nodeCount || 'No disponible'}</p>
+                        <p><strong>Relaciones:</strong> ${data.relationshipCount || 'No disponible'}</p>
+                    `;
+                    
+                    if (data.labels && data.labels.length > 0) {
+                        html += `<p><strong>Tipos de nodos:</strong> ${data.labels.join(', ')}</p>`;
+                    }
+                    
+                    if (data.relationshipTypes && data.relationshipTypes.length > 0) {
+                        html += `<p><strong>Tipos de relaciones:</strong> ${data.relationshipTypes.join(', ')}</p>`;
+                    }
+                    
+                    if (data.topEntityCounts && data.topEntityCounts.length > 0) {
+                        html += `<p><strong>Principales entidades:</strong></p><ul>`;
+                        data.topEntityCounts.forEach(entity => {
+                            const label = Array.isArray(entity.label) ? entity.label.join(', ') : entity.label;
+                            html += `<li>${label}: ${entity.count}</li>`;
+                        });
+                        html += `</ul>`;
+                    }
+                    
+                    graphInfoContent.innerHTML = html;
+                } else {
+                    throw new Error(data.error || 'Error al cargar información');
+                }
+            } catch (error) {
+                graphInfoContent.innerHTML = `<p class="error">Error al cargar información: ${error.message}</p>`;
+                console.error('Error al cargar información del grafo:', error);
+            }
+        }
+
+        // Enviar pregunta al servidor
+        async function sendQuestion() {
+            const question = questionInput.value.trim();
+            if (!question) return;
+            
+            // Agregar mensaje del usuario al chat
+            addMessageToChat(question, 'user');
+            questionInput.value = '';
+            
+            // Deshabilitar entrada mientras se procesa
+            questionInput.disabled = true;
+            sendButton.disabled = true;
+            statusDiv.innerHTML = 'Procesando pregunta... <div class="loader"></div>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/ask`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Guardar respuesta para análisis
+                    lastResponse = data;
+                    
+                    // Mostrar respuesta en el chat
+                    const answer = data.answer && data.answer.answer ? data.answer.answer : 'No se pudo generar una respuesta.';
+                    addMessageToChat(answer, 'bot');
+                    
+                    // Actualizar información de contexto
+                    updateContextInfo(data);
+                    
+                    // Cambiar a la pestaña de última consulta
+                    document.querySelector('.tab[data-tab="last-query"]').click();
+                } else {
+                    throw new Error(data.error || 'Error al procesar la pregunta');
+                }
+            } catch (error) {
+                addMessageToChat(`Error: ${error.message}`, 'bot error');
+                console.error('Error al enviar pregunta:', error);
+            } finally {
+                // Reactivar entrada
+                questionInput.disabled = false;
+                sendButton.disabled = false;
+                statusDiv.innerHTML = '';
+                questionInput.focus();
+            }
+        }
+
+        // Agregar mensaje al chat
+        function addMessageToChat(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'user' ? 'user-message' : 'bot-message';
+            
+            // Para los mensajes del bot, usar el formato adecuado
+            if (type !== 'user') {
+                if (type === 'bot error') {
+                    messageDiv.classList.add('error');
+                }
+                messageDiv.innerHTML = message.replace(/\n/g, '<br>');
+            } else {
+                messageDiv.textContent = message;
+            }
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Actualizar información de contexto
+        function updateContextInfo(data) {
+            // Limpiar contenedores
+            relevantChunks.innerHTML = '';
+            entitiesDiv.innerHTML = '';
+            
+            if (data.answer && data.answer.chunks) {
+                // Mostrar chunks relevantes
+                data.answer.chunks.forEach((chunk, index) => {
+                    const chunkDiv = document.createElement('div');
+                    chunkDiv.className = 'chunk';
+                    chunkDiv.innerHTML = `
+                        <strong>Chunk ${index + 1}</strong> (Score: ${chunk.score ? chunk.score.toFixed(4) : 'N/A'})
+                        <div>${chunk.text || 'No text available'}</div>
+                    `;
+                    relevantChunks.appendChild(chunkDiv);
+                });
+            } else {
+                relevantChunks.innerHTML = '<p>No hay fragmentos disponibles para esta consulta.</p>';
+            }
+            
+            if (data.answer && data.answer.entities) {
+                // Mostrar entidades detectadas
+                data.answer.entities.forEach(entity => {
+                    if (entity.content) {
+                        const entityDiv = document.createElement('div');
+                        entityDiv.className = 'entity';
+                        entityDiv.innerHTML = `
+                            <span>${entity.content}</span>
+                            ${entity.relationship ? `<small>(${entity.relationship})</small>` : ''}
+                        `;
+                        entitiesDiv.appendChild(entityDiv);
+                    }
+                });
+            } else {
+                entitiesDiv.innerHTML = '<p>No hay entidades disponibles para esta consulta.</p>';
+            }
+        }
+    </script>
+</body>
+</html>

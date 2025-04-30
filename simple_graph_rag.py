@@ -19,7 +19,6 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 load_dotenv()
 
 
-
 _SYSTEM_PROMPT = (
     "Eres un asistente especializado que responde preguntas basándose únicamente en el contexto extraído del grafo Neo4j.. de lo contrario no responder"
 )

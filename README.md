@@ -31,7 +31,7 @@ Inteligencia_Lavandera_LeccMag_USPCEU_2024
 Cómo ponerlo a funcionar en tu máquina
 Lo que necesitas
 
-Configuración rápida para DevMode la rama DevMode
+Configuración rápida
 
 Crea un archivo .env con:
 

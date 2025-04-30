@@ -6,7 +6,7 @@ flask
 sentence_transformers 
 # Groq client for LLM
 OPENAI
-neo4j_graphrag
+
 # Requests for API calls
 requests
 flask_cors
