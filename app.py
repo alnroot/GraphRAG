@@ -8,7 +8,15 @@ from flask_cors import CORS
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+
+# Configurar CORS para permitir peticiones del frontend en Vercel
+CORS(app, resources={r"/*": {"origins": [
+    "https://graphragalnroot.vercel.app/", 
+    "graphragalnroot.vercel.app", 
+    "https://graphragalnroot.vercel.app", 
+    "http://localhost:3000"  # Para desarrollo local
+]}})
+
 chatbot = GraphRAGChatbot()
 
 @app.route('/health', methods=['GET'])
@@ -73,11 +81,8 @@ def close_db_connection(error):
     chatbot.close()
 
 if __name__ == "__main__":
-    # Determine if running in production
-    is_production = os.environ.get('ENVIRONMENT', '').lower() == 'production'
-    
     # Get port from environment or use default
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 8080))
     
     # Run the app
-    app.run(host='0.0.0.0', port=port, debug=not is_production)
+    app.run(host='0.0.0.0', port=port, debug=False)
