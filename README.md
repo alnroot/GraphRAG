@@ -31,7 +31,10 @@ Inteligencia_Lavandera_LeccMag_USPCEU_2024
 Cómo ponerlo a funcionar en tu máquina
 Lo que necesitas
 
-Configuración rápida para DevMode la rama DevMode
+Configuración rápida para DevMode **la rama DevMode**
+**IMPORTANTE**
+
+TENER DOCKER Y EJECUTAR CON LAS VARIABLES:
 
 Crea un archivo .env con:
 
@@ -44,8 +47,8 @@ VECTOR_INDEX_NAME=vector
 Construye la imagen:
 docker-compose build
 
-Cruza los dedos y ejecuta:
 docker-compose up
 
+estará en http://localhost:5000
 
-Si todo va bien (cosa rara), estará en http://localhost:5000
+por ultimo abrir el archivo index.html para visualizacion
