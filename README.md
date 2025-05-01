@@ -1,65 +1,55 @@
-GraphRAG permite comprender y navegar las relaciones entre entidades, proporcionando respuestas más contextuales y explicables.
+Mi Aventura con GraphRAG Knowledge Graph Builder 🚀
 
-Permite identificar conexiones entre entidades, como entender que "el asesino era el mayordomo" debido a su relación con la víctima.
-Facilita saltar entre ideas relacionadas, incluso si no comparten las mismas palabras.
-Ademas el grafo muestra todas las conexiones, ayudando a verificar la veracidad de las respuestas.
+Por qué GraphRAG
 
-✅
-Integración de PDFs: documentos como tesis_n6208_Klappenbach e Inteligencia_Lavandera_LeccMag_USPCEU_2024
-Se implementó una interfaz que permite visualizar las conexiones entre entidades, facilitando la comprensión de las respuestas generadas.
+No es solo memoria fotográfica: Con RAG normal es como buscar en un libro por palabras. Con GraphRAG es como entender que el asesino era el mayordomo porque tenía conexión con la víctima (navegas relaciones, no solo texto).
+Es como tener un cerebro digital: Puedes "saltar" entre ideas relacionadas aunque no usen las mismas palabras.
+Puedes ver por qué te responde algo: El grafo muestra todas las conexiones, así que sabes que no se está inventando cosas (al menos no tanto).
 
-🧩 Desafíos enfrentados
-1. Embeddings inconsistentes
-Intenté usar OpenAI para los embeddings, pero al no ser los mismos que los del builder original, me daba respuestas que no tenían nada que ver. Terminé usando sentence-transformers que, aunque más lento, al menos daba resultados consistentes.
+Mis batallas durante la implementación 💪
+Lo que salió bien
+
+Los problemas que me dieron dolores de cabeza 🤕
+
+El drama de los embeddings: Intenté usar OpenAI para los embeddings, pero al no ser los mismos que los del builder original, me daba respuestas que no tenían nada que ver. Terminé usando sentence-transformers que, aunque más lento, al menos daba resultados consistentes.
 Nodos fantasma: Muchos nodos venían con valores nulos o vacíos, y mi código se rompía de formas misteriosas.
+La guerra contra los textos largos: Algunos fragmentos eran tan largos que el pobre LLM se quedaba sin tokens. Implementé un límite de 300 caracteres
 
-☕ Mejoras futuras
-Refinamiento de relaciones: Mejorar la precisión en la identificación de relaciones entre entidades para aprovechar al máximo la estructura del grafo..
+Cómo lo haría mejor si tuviera más café y tiempo ☕
 
-Integración con LangChain y LangGraph: Estos frameworks ofrecen componentes preconstruidos que podrían simplificar la gestión del contexto y las consultas, además de permitir flujos de trabajo más complejos y dinámicos.
+Refinamiento de relaciones: El GraphRAG actual está bien, pero podría refinar mucho más las relaciones entre entidades para aprovechar mejor la estructura del grafo. A veces siento que apenas estoy rascando la superficie.
+Integraría LangChain y LangGraph: Estos frameworks abstraen mucha complejidad y tienen componentes pre-construidos que me habrían ahorrado escribir todo ese código para manejar el contexto y las consultas. ¡Sacarle el jugo al grafo con LangGraph sería épico!
+Ajuste dinámico de embeddings: Cuando una búsqueda da resultados malos, sería genial poder ajustar automáticamente los parámetros de búsqueda o incluso cambiar el modelo de embeddings según el tipo de pregunta.
+Memory multi-turno: Hacer que recuerde preguntas anteriores para poder tener una conversación natural, no solo preguntas aisladas.
+Una interfaz que no parezca de los 90s: Una UI donde puedas ver el grafo, las conexiones, y cómo llegó a la respuesta. Sería como CSI pero para información.
+Función "explícame como si tuviera 5 años": Botón para simplificar respuestas complejas y otro para profundizar si te interesa el tema.
 
-Ajuste dinámico de embeddings: Implementar mecanismos que ajusten automáticamente los parámetros de búsqueda o cambien el modelo de embeddings según el tipo de pregunta ademas de usar los mas actualizados..
+PDF:
+tesis_n6208_Klappenbach
+Inteligencia_Lavandera_LeccMag_USPCEU_2024
 
-Memoria dinamica: Permitir que el sistema recuerde interacciones anteriores para mantener conversaciones más naturales y coherentes.
+Cómo ponerlo a funcionar en tu máquina
+Lo que necesitas
 
-Función de simplificación: Añadir un botón que simplifique las respuestas complejas y otro que permita profundizar en el tema según el interés del usuario.
+Configuración rápida
 
-🛠️ Configuración rápida para DevMode
-Importante: Actualmente, el backend utiliza sentence-transformers para los embeddings, lo que requiere una cantidad significativa de memoria para ejecutarse en instancias gratuitas.., entonces localmente es la solucion en esta instancia.
+Crea un archivo .env con:
 
-Requisitos
-Tener Docker instalado.
-
-Pasos
-Clonar la rama DevMode del repositorio.
-
-Crear un archivo .env con las siguientes variables:
-
-env
-Copiar
-Editar
 NEO4J_URI=neo4j+s://tu-instancia.databases.neo4j.io
 NEO4J_USER=neo4j
 NEO4J_PASSWORD=xe5Y63flhQPBuBiwYebAis3FvrC_Tyt5peIZgy7DdGI
-OPENAI_API_KEY=sk-tu-api-key
+OPENAI_API_KEY=sk-tu-api-key-carísima
 VECTOR_INDEX_NAME=vector
-Construir la imagen de Docker:
 
-bash
-Copiar
-Editar
+Construye la imagen:
 docker-compose build
-Iniciar los servicios:
 
-bash
-Copiar
-Editar
+Cruza los dedos y ejecuta:
 docker-compose up
-Acceder a la aplicación en http://localhost:5000.
-
-Abrir el archivo index.html para visualizar el grafo y las conexiones.
 
 
-![image](https://github.com/user-attachments/assets/bdeea60e-26d3-4fd9-b3b7-5c093c024c24)
-![image](https://github.com/user-attachments/assets/92a3fc52-1232-4c27-a279-d9ef6895e19a)
+Si todo va bien (cosa rara), estará en http://localhost:5000
+![image](https://github.com/user-attachments/assets/5ab0ee76-4871-46b8-9ce3-6469d8d2c42d)
+
+![image](https://github.com/user-attachments/assets/1c55fa4d-ee3d-42e2-8840-1b4bfed47930)
 
