@@ -49,3 +49,7 @@ docker-compose up
 
 
 Si todo va bien (cosa rara), estará en http://localhost:5000
+![image](https://github.com/user-attachments/assets/5ab0ee76-4871-46b8-9ce3-6469d8d2c42d)
+
+![image](https://github.com/user-attachments/assets/1c55fa4d-ee3d-42e2-8840-1b4bfed47930)
+
