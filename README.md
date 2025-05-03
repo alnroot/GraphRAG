@@ -39,9 +39,8 @@ Clonar la rama DevMode del repositorio.
 
 Crear un archivo .env con las siguientes variables:
 
-env
-Copiar
-Editar
+.env
+
 NEO4J_URI=neo4j+s://tu-instancia.databases.neo4j.io
 NEO4J_USER=neo4j
 NEO4J_PASSWORD=xe5Y63flhQPBuBiwYebAis3FvrC_Tyt5peIZgy7DdGI
@@ -49,9 +48,7 @@ OPENAI_API_KEY=sk-tu-api-key-carísima
 VECTOR_INDEX_NAME=vector
 Construir la imagen de Docker:
 
-bash
-Copiar
-Editar
+.bash:
 docker-compose build
 Iniciar los servicios:
 
