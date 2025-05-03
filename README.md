@@ -7,17 +7,17 @@ Facilita saltar entre ideas relacionadas, incluso si no comparten las mismas pal
 El grafo muestra todas las conexiones, ayudando a verificar la veracidad de las respuestas.
 
 ✅
-Integración de PDFs: Se logró procesar documentos como tesis_n6208_Klappenbach e Inteligencia_Lavandera_LeccMag_USPCEU_2024, extrayendo información relevante de estos 2 papers que hablan de IA (tecnologia) y neurociencia de la dopamina
+PDFs: tesis_n6208_Klappenbach e Inteligencia_Lavandera_LeccMag_USPCEU_2024, extrayendo información relevante de estos 2 papers que hablan de IA (tecnologia) y neurociencia de la dopamina para identificar relaciones..
 
 Se implementó una interfaz que permite visualizar las conexiones entre entidades, facilitando la comprensión de las respuestas generadas.
 
 🧩 Desafíos
-Inicialmente se utilizaron embeddings de OpenAI, pero al no coincidir con los del builder original "graphRAG builder neo4j", las respuestas eran incoherentes. Se optó por sentence-transformers, que, aunque más lentos, ofrecieron resultados consistentes y eran los mismos generados por la interfaz.
+Inicialmente se utilizaron embeddings de OpenAI, pero al no coincidir con los del builder original "graphRAG builder neo4j", las respuestas eran incoherentes. Se optó por sentence-transformers, que, aunque más lentos, ofrecieron resultados consistentes y eran los mismos generados por la interfaz de neo4j publica..
 
 Se encontraron nodos con valores nulos o vacíos, lo que causaba errores en el código. Se implementaron validaciones para manejar estos casos y asegurar la estabilidad del sistema.
 
 ☕ Mejoras futuras
-Refinamiento de relaciones: Mejorar la precisión en la identificación de relaciones entre entidades para aprovechar al máximo la estructura del grafo.
+Mejorar la precisión en la identificación de relaciones entre entidades para aprovechar al máximo la estructura del grafo.
 
 Integración con LangChain y LangGraph: Estos frameworks ofrecen componentes preconstruidos que podrían simplificar la gestión del contexto y las consultas, además de permitir flujos de trabajo más complejos y dinámicos.
 
@@ -27,9 +27,10 @@ Memoria de múltiples turnos: Permitir que el sistema recuerde interacciones ant
 
 Función de simplificación: Añadir un botón que simplifique las respuestas complejas y otro que permita profundizar en el tema según el interés del usuario.
 
-🛠️ Configuración rápida para DevMode
-Importante: Actualmente, el backend utiliza sentence-transformers para los embeddings, lo que requiere una cantidad significativa de memoria para ejecutarse localmente.
+🛠️ Configuración rápida para DevMode y probarlo localmente
 
+**Importante: Actualmente, el backend utiliza sentence-transformers para los embeddings, lo que requiere una cantidad significativa de memoria para ejecutarse localmente.
+**
 Requisitos
 Tener Docker instalado.
 
