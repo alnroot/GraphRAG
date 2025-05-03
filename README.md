@@ -1,5 +1,4 @@
-🚀 ¿Por qué GraphRAG?
-GraphRAG va más allá de la simple recuperación de información. Mientras que un sistema RAG tradicional busca coincidencias de palabras clave, GraphRAG permite comprender y navegar las relaciones entre entidades, proporcionando respuestas más contextuales y explicables.
+Mientras que un sistema RAG tradicional busca coincidencias de palabras clave, GraphRAG permite comprender y navegar las relaciones entre entidades, proporcionando respuestas más contextuales y explicables.
 
 Permite identificar conexiones entre entidades, como entender que "el asesino era el mayordomo" debido a su relación con la víctima.
 
